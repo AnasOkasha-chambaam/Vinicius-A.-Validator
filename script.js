@@ -12,7 +12,11 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       pause_resume_btn.className = "clear";
       stop_btn.style.display = "none";
       net_time.innerHTML = `Total JS Execution Time: <span>${totalJSTime} ms</span> & Total Server Execution Time: <span>${totalServerTime} ms</span>.`;
-      totalJSTime = totalServerTime = 0;
+      validate_counters.innerHTML = `Total Validated Lines: <span>${
+        successCounter + falseCounter
+      } Line</span> & Total Unvalidated Lines: <span>${
+        -successCounter - falseCounter + scriptArray.length
+      } Line</span>.`;
     },
     pause: () => {
       appStatus = statusArray[1];
@@ -31,15 +35,21 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       validateFunctionality();
     },
     run: () => {
+      totalJSTime = totalServerTime = 0;
+      falseCounter = successCounter = 0;
       success_data.innerHTML = false_data.innerHTML = "";
       form_submit_btn.disabled = true;
       net_time.innerHTML = "";
+      validate_counters.innerHTML = "";
+      false_counter.innerText = success_counter.innerText = 0;
       updateStatus.resume();
     },
   },
   scriptArray,
   totalJSTime = 0,
-  totalServerTime = 0;
+  totalServerTime = 0,
+  successCounter = 0,
+  falseCounter = 0;
 
 /**
  * @desc - The function takes a String type and turn it into an Array of lines that should be validated
@@ -112,6 +122,9 @@ function addResultsToItsList({ data, success, execTime, jsExecTime }, index) {
   document
     .querySelector(`.line-numbers span:nth-child(${index + 1})`)
     .classList.add(success ? "success" : "false");
+  success ? successCounter++ : falseCounter++;
+  success_counter.innerText = successCounter;
+  false_counter.innerHTML = falseCounter;
 }
 
 /**

@@ -147,7 +147,25 @@ body {
   text-align: center;
   padding: 9px;
   background-color: var(--success-clr);
+  position: relative;
+  display: block;
 }
+
+.results > div h3 span {
+  position: absolute;
+  left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 8px 12px;
+  background-color: white;
+  color: var(--success-clr);
+  text-align: center;
+}
+
+.results > div h3 span#false_counter {
+  color: var(--false-clr);
+}
+
 .results > div.false-div h3 {
   background-color: var(--false-clr);
 }
@@ -187,11 +205,13 @@ body {
   color: var(--pause-clr);
 }
 
-#net_time {
+#net_time,
+#validate_counters {
   color: var(--white-clr);
   text-align: center;
   padding: 9px auto;
 }
-#net_time span {
+#net_time span,
+#validate_counters span {
   color: var(--pause-clr);
 }
