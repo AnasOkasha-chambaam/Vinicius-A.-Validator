@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Script Validate by PHP</title>
+    <link rel="stylesheet" href="./index.css" />
+    <script src="./script.js" defer></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <form
+        action=""
+        method="post"
+        id="script_to_validate"
+        class="script-to-validate"
+      >
+        <textarea
+          name="script"
+          id="script_list"
+          class="script-list"
+          cols="30"
+          rows="10"
+          placeholder="Enter Your Script Here to Validate"
+        ></textarea>
+        <input type="submit" id="form_submit_btn" value="Validate List" />
+        <input type="button" id="pause_resume_btn" value="Clear Textarea" />
+        <input
+          type="button"
+          id="stop_btn"
+          style="display: none"
+          value="Stop Validation"
+        />
+      </form>
+      <div class="success-div">
+        <h3>Success Data</h3>
+        <ul class="success-data" id="success_data"></ul>
+      </div>
+      <div class="false-div">
+        <h3>False Data</h3>
+        <ul class="false-data" id="false_data"></ul>
+      </div>
+    </div>
+  </body>
+</html>
