@@ -16,30 +16,46 @@
         id="script_to_validate"
         class="script-to-validate"
       >
-        <textarea
-          name="script"
-          id="script_list"
-          class="script-list"
-          cols="30"
-          rows="10"
-          placeholder="Enter Your Script Here to Validate"
-        ></textarea>
-        <input type="submit" id="form_submit_btn" value="Validate List" />
-        <input type="button" id="pause_resume_btn" value="Clear Textarea" />
-        <input
-          type="button"
-          id="stop_btn"
-          style="display: none"
-          value="Stop Validation"
-        />
+        <div class="editor-container">
+          <div class="editor">
+            <div class="line-numbers" id="line_numbers">
+              <span></span>
+            </div>
+            <textarea
+              name="script"
+              id="script_list"
+              class="script-list"
+              cols="30"
+              rows="10"
+              placeholder="Enter Your Script Here to Validate"
+            ></textarea>
+          </div>
+        </div>
+        <div class="buttons">
+          <input type="submit" id="form_submit_btn" value="Validate List" />
+          <input
+            type="button"
+            id="pause_resume_btn"
+            class="clear"
+            value="Clear Textarea"
+          />
+          <input
+            type="button"
+            id="stop_btn"
+            style="display: none"
+            value="Stop Validation"
+          />
+        </div>
       </form>
-      <div class="success-div">
-        <h3>Success Data</h3>
-        <ul class="success-data" id="success_data"></ul>
-      </div>
-      <div class="false-div">
-        <h3>False Data</h3>
-        <ul class="false-data" id="false_data"></ul>
+      <div class="results">
+        <div class="success-div">
+          <h3>Success Data</h3>
+          <ul class="success-data" id="success_data"></ul>
+        </div>
+        <div class="false-div">
+          <h3>False Data</h3>
+          <ul class="false-data" id="false_data"></ul>
+        </div>
       </div>
     </div>
   </body>

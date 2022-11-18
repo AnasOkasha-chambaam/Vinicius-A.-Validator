@@ -9,12 +9,14 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       form_submit_btn.disabled = false;
       iterator = 0;
       pause_resume_btn.value = "Clear Textarea";
+      pause_resume_btn.className = "clear";
       stop_btn.style.display = "none";
     },
     pause: () => {
       appStatus = statusArray[1];
       console.log("pause");
       pause_resume_btn.value = "Resume Validation";
+      pause_resume_btn.className = "resume";
       stop_btn.style.display = "inline";
       return;
     },
@@ -22,6 +24,7 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       appStatus = statusArray[2];
       console.log("resume");
       pause_resume_btn.value = "Pause Validation";
+      pause_resume_btn.className = "pause";
       stop_btn.style.display = "none";
       validateFunctionality();
     },
@@ -38,7 +41,7 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
  * @param {String} script - The script that is going to be sent to php.
  */
 function prepareScript(script) {
-  return script.split(/\r?\n/); // \r for mac "Enter", \n for Window "Enter"
+  return script.split(/\r?\n/);
 }
 
 /**
@@ -76,7 +79,7 @@ async function validateFunctionality() {
     let response = await (await lineValidator(scriptArray[iterator])).json();
     const endTime = Date.now();
     response["jsExecTime"] = `${endTime - startTime} ms`;
-    addResultsToItsList(response);
+    addResultsToItsList(response, iterator);
     iterator++;
     validateFunctionality();
   } catch (err) {
@@ -89,12 +92,15 @@ async function validateFunctionality() {
  *
  * @param {Object} serverResponse - {data: {line}, success: {bolean},serverExecTime: {number} }
  */
-function addResultsToItsList({ data, success, serverExecTime }) {
+function addResultsToItsList({ data, success, serverExecTime }, index) {
   let li = document.createElement("li");
   li.innerText = data;
   document
     .getElementById(`${success ? "success" : "false"}_data`)
     .appendChild(li);
+  document
+    .querySelector(`.line-numbers span:nth-child(${index + 1})`)
+    .classList.add(success ? "success" : "false");
 }
 
 /**
@@ -102,6 +108,7 @@ function addResultsToItsList({ data, success, serverExecTime }) {
  */
 function scriptFormSubmit(event) {
   event.preventDefault();
+  addLinesToTextarea();
   let scriptListInputValue = script_list.value.trim();
 
   if (!(scriptListInputValue.length > 0)) {
@@ -116,10 +123,14 @@ function scriptFormSubmit(event) {
 
 script_to_validate.addEventListener("submit", scriptFormSubmit);
 
+/**
+ * @desc - Pause/Resume functionality & Clear Editor
+ */
 pause_resume_btn.addEventListener("click", (event) => {
   event.preventDefault();
   if (appStatus === statusArray[0]) {
     script_list.value = "";
+    addLinesToTextarea();
   }
   if (appStatus === statusArray[2]) {
     return updateStatus.pause();
@@ -129,6 +140,15 @@ pause_resume_btn.addEventListener("click", (event) => {
   }
 });
 
+/**
+ * @desc - Stop functioality
+ */
 stop_btn.addEventListener("click", (event) => {
   updateStatus.stop();
 });
+
+function addLinesToTextarea() {
+  const numberOfLines = script_list.value.split(/\r?\n/).length;
+  line_numbers.innerHTML = Array(numberOfLines).fill("<span></span>").join("");
+}
+script_list.addEventListener("keypress", addLinesToTextarea);
