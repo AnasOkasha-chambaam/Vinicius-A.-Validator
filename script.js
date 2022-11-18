@@ -11,6 +11,8 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       pause_resume_btn.value = "Clear Textarea";
       pause_resume_btn.className = "clear";
       stop_btn.style.display = "none";
+      net_time.innerHTML = `Total JS Execution Time: <span>${totalJSTime} ms</span> & Total Server Execution Time: <span>${totalServerTime} ms</span>.`;
+      totalJSTime = totalServerTime = 0;
     },
     pause: () => {
       appStatus = statusArray[1];
@@ -31,10 +33,13 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
     run: () => {
       success_data.innerHTML = false_data.innerHTML = "";
       form_submit_btn.disabled = true;
+      net_time.innerHTML = "";
       updateStatus.resume();
     },
   },
-  scriptArray;
+  scriptArray,
+  totalJSTime = 0,
+  totalServerTime = 0;
 
 /**
  * @desc - The function takes a String type and turn it into an Array of lines that should be validated
@@ -78,7 +83,9 @@ async function validateFunctionality() {
   try {
     let response = await (await lineValidator(scriptArray[iterator])).json();
     const endTime = Date.now();
-    response["jsExecTime"] = `${endTime - startTime} ms`;
+    response["jsExecTime"] = endTime - startTime;
+    totalJSTime += response["jsExecTime"];
+    totalServerTime += response["execTime"];
     addResultsToItsList(response, iterator);
     iterator++;
     validateFunctionality();
@@ -92,9 +99,13 @@ async function validateFunctionality() {
  *
  * @param {Object} serverResponse - {data: {line}, success: {bolean},serverExecTime: {number} }
  */
-function addResultsToItsList({ data, success, serverExecTime }, index) {
-  let li = document.createElement("li");
+function addResultsToItsList({ data, success, execTime, jsExecTime }, index) {
+  let li = document.createElement("li"),
+    span = document.createElement("span");
+  span.innerHTML = `JS Execution Time: <span>${jsExecTime} ms</span> & Server ExecTime: <span>${execTime} ms</span>`;
+  span.className = "extra-info";
   li.innerText = data;
+  li.appendChild(span);
   document
     .getElementById(`${success ? "success" : "false"}_data`)
     .appendChild(li);

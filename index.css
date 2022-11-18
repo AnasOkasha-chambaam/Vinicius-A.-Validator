@@ -21,6 +21,12 @@ body {
   margin: auto;
 }
 
+.app-container > h1 {
+  text-align: center;
+  color: white;
+  margin: 40px auto;
+}
+
 /* Styling Editor Start */
 .editor-container {
   box-shadow: 0 0 20px black;
@@ -130,6 +136,7 @@ body {
 .results {
   color: white;
   display: flex;
+  min-width: 663px;
 }
 
 .results > div {
@@ -148,9 +155,43 @@ body {
 .results > div ul li {
   overflow-wrap: break-word;
   line-height: 1.5;
+  position: relative;
+  margin: 16px 0;
+  padding: 9px 3px;
+  border-bottom: 1px solid var(--gray-clr);
 }
 
 .results > div ul li .extra-info {
   position: absolute;
+  left: -10px;
+  padding: 9px;
+  transform: translateX(-100%);
+  background-color: var(--gray-clr);
+  color: white;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 99;
+}
+
+.results > div.success-div ul li .extra-info {
   right: -10px;
+  transform: translateX(100%);
+}
+
+.results > div ul li:hover .extra-info {
+  opacity: 1;
+}
+
+.results > div ul li .extra-info span {
+  color: var(--pause-clr);
+}
+
+#net_time {
+  color: var(--white-clr);
+  text-align: center;
+  padding: 9px auto;
+}
+#net_time span {
+  color: var(--pause-clr);
 }
