@@ -5,8 +5,10 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
   appStatus = statusArray[0],
   execStartTime = 0,
   execEndTime = 0,
+  operationsCompleteted = 0,
   updateStatus = {
     stop: () => {
+      console.log("stop");
       execEndTime = Date.now();
       appStatus = statusArray[0];
       form_submit_btn.disabled = false;
@@ -14,7 +16,7 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       pause_resume_btn.value = "Clear Textarea";
       pause_resume_btn.className = "clear";
       stop_btn.style.display = "none";
-      updateStatus.updateUI();
+      updateStatus.updateUI(true);
     },
     // pause: () => {
     //   appStatus = statusArray[1];
@@ -43,6 +45,7 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       });
     },
     run: () => {
+      operationsCompleteted = 0;
       execStartTime = Date.now();
       if (updateStatus.lastController !== 0 || updateStatus.lastSignal !== 0) {
         updateStatus.lastController.abort();
@@ -58,10 +61,12 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       false_counter.innerText = success_counter.innerText = 0;
       updateStatus.resume();
     },
-    updateUI: () => {
-      net_time.innerHTML = `Total JS Execution Time: <span>${
-        execEndTime - execStartTime
-      } ms</span> & Total Server Execution Time: <span>${totalServerTime} ms</span>.`;
+    updateUI: (showTime) => {
+      if (showTime) {
+        net_time.innerHTML = `Total JS Execution Time: <span>${
+          execEndTime - execStartTime
+        } ms</span> & Total Server Execution Time: <span>${totalServerTime} ms</span>.`;
+      }
       validate_counters.innerHTML = `Total Validated Lines: <span>${
         successCounter + falseCounter
       } Line</span> & Total Unvalidated Lines: <span>${
@@ -115,8 +120,8 @@ async function validateFunctionality(index) {
     return;
   }
   if (iterator >= scriptArray.length || appStatus === statusArray[0]) {
-    updateStatus.stop();
-    updateStatus.updateUI();
+    // updateStatus.stop();
+    // updateStatus.updateUI();
     return;
   }
   try {
@@ -127,7 +132,8 @@ async function validateFunctionality(index) {
     totalServerTime += response["execTime"];
     addResultsToItsList(response, index);
     updateStatus.updateUI();
-    if (index >= statusArray.length - 1) {
+    operationsCompleteted++;
+    if (operationsCompleteted === scriptArray.length) {
       updateStatus.stop();
       // updateStatus.updateUI();
     }
