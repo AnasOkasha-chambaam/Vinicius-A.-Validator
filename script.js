@@ -3,38 +3,52 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
   iterator = 0,
   statusArray = ["stopped", "paused", "running"],
   appStatus = statusArray[0],
+  execStartTime = 0,
+  execEndTime = 0,
   updateStatus = {
     stop: () => {
+      execEndTime = Date.now();
       appStatus = statusArray[0];
       form_submit_btn.disabled = false;
       iterator = 0;
       pause_resume_btn.value = "Clear Textarea";
       pause_resume_btn.className = "clear";
       stop_btn.style.display = "none";
-      net_time.innerHTML = `Total JS Execution Time: <span>${totalJSTime} ms</span> & Total Server Execution Time: <span>${totalServerTime} ms</span>.`;
-      validate_counters.innerHTML = `Total Validated Lines: <span>${
-        successCounter + falseCounter
-      } Line</span> & Total Unvalidated Lines: <span>${
-        -successCounter - falseCounter + scriptArray.length
-      } Line</span>.`;
+      updateStatus.updateUI();
     },
-    pause: () => {
-      appStatus = statusArray[1];
-      console.log("pause");
-      pause_resume_btn.value = "Resume Validation";
-      pause_resume_btn.className = "resume";
-      stop_btn.style.display = "inline";
-      return;
+    // pause: () => {
+    //   appStatus = statusArray[1];
+    //   console.log("pause");
+    //   pause_resume_btn.value = "Resume Validation";
+    //   pause_resume_btn.className = "resume";
+    //   stop_btn.style.display = "inline";
+    //   return;
+    // },
+    cancel: () => {
+      console.log("cancel");
+      updateStatus.lastController.abort();
+      updateStatus.stop();
     },
     resume: () => {
       appStatus = statusArray[2];
       console.log("resume");
-      pause_resume_btn.value = "Pause Validation";
+      pause_resume_btn.value = "Cancel Validation";
       pause_resume_btn.className = "pause";
       stop_btn.style.display = "none";
-      validateFunctionality();
+      scriptArray.forEach((line, index) => {
+        if (appStatus === statusArray[2]) {
+          validateFunctionality(index);
+          iterator++;
+        }
+      });
     },
     run: () => {
+      execStartTime = Date.now();
+      if (updateStatus.lastController !== 0 || updateStatus.lastSignal !== 0) {
+        updateStatus.lastController.abort();
+      }
+      updateStatus.lastController = new AbortController();
+      updateStatus.lastSignal = updateStatus.lastController.signal;
       totalJSTime = totalServerTime = 0;
       falseCounter = successCounter = 0;
       success_data.innerHTML = false_data.innerHTML = "";
@@ -44,6 +58,18 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       false_counter.innerText = success_counter.innerText = 0;
       updateStatus.resume();
     },
+    updateUI: () => {
+      net_time.innerHTML = `Total JS Execution Time: <span>${
+        execEndTime - execStartTime
+      } ms</span> & Total Server Execution Time: <span>${totalServerTime} ms</span>.`;
+      validate_counters.innerHTML = `Total Validated Lines: <span>${
+        successCounter + falseCounter
+      } Line</span> & Total Unvalidated Lines: <span>${
+        -successCounter - falseCounter + scriptArray.length
+      } Line</span>.`;
+    },
+    lastController: 0,
+    lastSignal: 0,
   },
   scriptArray,
   totalJSTime = 0,
@@ -65,6 +91,7 @@ function prepareScript(script) {
  */
 function lineValidator(scriptLine) {
   return fetch(url, {
+    signal: updateStatus.lastSignal,
     method: "POST",
     body: scriptLine.trim(),
     headers: { "Content-Type": "text/plain" },
@@ -81,13 +108,15 @@ function lineValidator(scriptLine) {
  * @param {Array} scriptArray - Array of lines to be validated
  * @returns iterator = 0  - Reseting the iterator to zero
  */
-async function validateFunctionality() {
+async function validateFunctionality(index) {
   const startTime = Date.now();
+
   if (appStatus === statusArray[1]) {
     return;
   }
   if (iterator >= scriptArray.length || appStatus === statusArray[0]) {
     updateStatus.stop();
+    updateStatus.updateUI();
     return;
   }
   try {
@@ -96,9 +125,12 @@ async function validateFunctionality() {
     response["jsExecTime"] = endTime - startTime;
     totalJSTime += response["jsExecTime"];
     totalServerTime += response["execTime"];
-    addResultsToItsList(response, iterator);
-    iterator++;
-    validateFunctionality();
+    addResultsToItsList(response, index);
+    updateStatus.updateUI();
+    if (index >= statusArray.length - 1) {
+      updateStatus.stop();
+      // updateStatus.updateUI();
+    }
   } catch (err) {
     updateStatus.stop();
     console.log(err.message);
@@ -157,7 +189,7 @@ pause_resume_btn.addEventListener("click", (event) => {
     addLinesToTextarea();
   }
   if (appStatus === statusArray[2]) {
-    return updateStatus.pause();
+    return updateStatus.cancel();
   }
   if (appStatus === statusArray[1]) {
     return updateStatus.resume();
