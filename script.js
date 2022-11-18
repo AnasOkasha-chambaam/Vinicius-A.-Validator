@@ -1,5 +1,5 @@
 "use strict";
-let url = "http://localhost:8000/api/v1/vinicius",
+let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
   iterator = 0,
   statusArray = ["stopped", "paused", "running"],
   appStatus = statusArray[0],
@@ -72,13 +72,17 @@ async function validateFunctionality() {
     updateStatus.stop();
     return;
   }
-
-  let response = await (await lineValidator(scriptArray[iterator])).json();
-  const endTime = Date.now();
-  response["jsExecTime"] = `${endTime - startTime} ms`;
-  addResultsToItsList(response);
-  iterator++;
-  validateFunctionality();
+  try {
+    let response = await (await lineValidator(scriptArray[iterator])).json();
+    const endTime = Date.now();
+    response["jsExecTime"] = `${endTime - startTime} ms`;
+    addResultsToItsList(response);
+    iterator++;
+    validateFunctionality();
+  } catch (err) {
+    updateStatus.stop();
+    console.log(err.message);
+  }
 }
 
 /**
