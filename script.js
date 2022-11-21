@@ -8,35 +8,21 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
   operationsCompleteted = 0,
   updateStatus = {
     stop: () => {
-      console.log("stop");
+      updateStatus.changeAppStatus(statusArray[0], "Stop");
       execEndTime = Date.now();
-      appStatus = statusArray[0];
-      form_submit_btn.disabled = false;
-      iterator = 0;
-      pause_resume_btn.value = "Clear Textarea";
-      pause_resume_btn.className = "clear";
-      stop_btn.style.display = "none";
       updateStatus.updateUI(true);
     },
     // pause: () => {
-    //   appStatus = statusArray[1];
-    //   console.log("pause");
-    //   pause_resume_btn.value = "Resume Validation";
-    //   pause_resume_btn.className = "resume";
-    //   stop_btn.style.display = "inline";
+    // updateStatus.changeAppStatus(statusArray[1],'Pause')
     //   return;
     // },
     cancel: () => {
-      console.log("cancel");
       updateStatus.lastController.abort();
+      console.log("cancel");
       updateStatus.stop();
     },
     resume: () => {
-      appStatus = statusArray[2];
-      console.log("resume");
-      pause_resume_btn.value = "Cancel Validation";
-      pause_resume_btn.className = "pause";
-      stop_btn.style.display = "none";
+      updateStatus.changeAppStatus(statusArray[2], "Resume");
       scriptArray.forEach((line, index) => {
         if (appStatus === statusArray[2]) {
           validateFunctionality(index);
@@ -45,22 +31,38 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       });
     },
     run: () => {
-      operationsCompleteted = 0;
+      appStatus.resetVariables();
       execStartTime = Date.now();
+      updateStatus.resetFetchController();
+      updateStatus.resetUI();
+      updateStatus.resume();
+    },
+    resetVariables: () => {
+      iterator = 0;
+      operationsCompleteted = 0;
+      totalJSTime = totalServerTime = 0;
+      falseCounter = successCounter = 0;
+    },
+    resetFetchController: () => {
       if (updateStatus.lastController !== 0 || updateStatus.lastSignal !== 0) {
         updateStatus.lastController.abort();
       }
       updateStatus.lastController = new AbortController();
       updateStatus.lastSignal = updateStatus.lastController.signal;
-      totalJSTime = totalServerTime = 0;
-      falseCounter = successCounter = 0;
-      success_data.innerHTML = false_data.innerHTML = "";
+    },
+    resetUI: () => {
       form_submit_btn.disabled = true;
       net_time.innerHTML = "";
       validate_counters.innerHTML = "";
+      success_data.innerHTML = false_data.innerHTML = "";
       false_counter.innerText = success_counter.innerText = 0;
-      updateStatus.resume();
     },
+    changeAppStatus: (appNewStatus, consoleLog) => {
+      appStatus = appNewStatus;
+      console.log(consoleLog);
+      updateStatus.update_btns(appStatus);
+    },
+
     updateUI: (showTime) => {
       if (showTime) {
         net_time.innerHTML = `Total JS Execution Time: <span>${
@@ -72,6 +74,29 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       } Line</span> & Total Unvalidated Lines: <span>${
         -successCounter - falseCounter + scriptArray.length
       } Line</span>.`;
+    },
+    update_btns(status) {
+      switch (status) {
+        case statusArray[0]: // Stop
+          pause_resume_btn.value = "Clear Textarea";
+          pause_resume_btn.className = "clear";
+          stop_btn.style.display = "none";
+          form_submit_btn.disabled = false;
+          break;
+        case statusArray[1]: // Pause
+          pause_resume_btn.value = "Resume Validation";
+          pause_resume_btn.className = "resume";
+          stop_btn.style.display = "inline";
+          break;
+        case statusArray[2]: // Run
+          pause_resume_btn.value = "Cancel Validation";
+          pause_resume_btn.className = "pause";
+          stop_btn.style.display = "none";
+          break;
+        default:
+          console.log(appStatus);
+          break;
+      }
     },
     lastController: 0,
     lastSignal: 0,
@@ -126,16 +151,17 @@ async function validateFunctionality(index) {
   }
   try {
     let response = await (await lineValidator(scriptArray[iterator])).json();
+    // Set Execution Time
     const endTime = Date.now();
     response["jsExecTime"] = endTime - startTime;
     totalJSTime += response["jsExecTime"];
     totalServerTime += response["execTime"];
+    // Handle Results
     addResultsToItsList(response, index);
     updateStatus.updateUI();
     operationsCompleteted++;
     if (operationsCompleteted === scriptArray.length) {
       updateStatus.stop();
-      // updateStatus.updateUI();
     }
   } catch (err) {
     updateStatus.stop();
@@ -144,7 +170,7 @@ async function validateFunctionality(index) {
 }
 
 /**
- *
+ * @desc - Handle Results
  * @param {Object} serverResponse - {data: {line}, success: {bolean},serverExecTime: {number} }
  */
 function addResultsToItsList({ data, success, execTime, jsExecTime }, index) {
