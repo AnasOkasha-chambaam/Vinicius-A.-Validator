@@ -1,4 +1,28 @@
 "use strict";
+class HyperdizedWay {
+  constructor(maxRequestsNumber, arr) {
+    this.iteratorValue = 0;
+    this.maxRequestsNumber = maxRequestsNumber;
+    this.arr = arr;
+  }
+  get iterator() {
+    return this.iteratorValue;
+  }
+  set iterator(value) {
+    if (value > this.arr.length) return;
+    this.iteratorValue = value;
+    iterator = value;
+    let promise = new Promise(async (res, rej, reason) => {
+      await validateFunctionality(this.iteratorValue - 1);
+      res();
+    });
+    promise.then(() => {
+      this.iterator = this.iterator + 1;
+      //   console.log(this.iteratorValue);
+    });
+  }
+}
+let emptyPlaces = 500;
 let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
   iterator = 0,
   statusArray = ["stopped", "paused", "running"],
@@ -7,6 +31,35 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
   execEndTime = 0,
   operationsCompleteted = 0,
   updateStatus = {
+    run: () => {
+      form_submit_btn.disabled = true;
+      updateStatus.resetUI();
+      updateStatus.resetVariables();
+      execStartTime = Date.now();
+      updateStatus.resetFetchController();
+      updateStatus.resume();
+    },
+    resume: () => {
+      updateStatus.changeAppStatus(statusArray[2], "Resume");
+      let i = new HyperdizedWay(
+        scriptArray.length < emptyPlaces ? scriptArray.length : emptyPlaces,
+        scriptArray
+      );
+      for (i.iterator; i.iterator < i.maxRequestsNumber; ) {
+        i.iterator = i.iterator + 1;
+      }
+      // scriptArray.forEach((line, index) => {
+      //   if (appStatus === statusArray[2]) {
+      //     validateFunctionality(index);
+      //     iterator++;
+      //   }
+      // });
+    },
+    cancel: () => {
+      updateStatus.lastController.abort();
+      console.log("cancel");
+      updateStatus.stop();
+    },
     stop: () => {
       updateStatus.changeAppStatus(statusArray[0], "Stop");
       execEndTime = Date.now();
@@ -16,27 +69,7 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
     // updateStatus.changeAppStatus(statusArray[1],'Pause')
     //   return;
     // },
-    cancel: () => {
-      updateStatus.lastController.abort();
-      console.log("cancel");
-      updateStatus.stop();
-    },
-    resume: () => {
-      updateStatus.changeAppStatus(statusArray[2], "Resume");
-      scriptArray.forEach((line, index) => {
-        if (appStatus === statusArray[2]) {
-          validateFunctionality(index);
-          iterator++;
-        }
-      });
-    },
-    run: () => {
-      appStatus.resetVariables();
-      execStartTime = Date.now();
-      updateStatus.resetFetchController();
-      updateStatus.resetUI();
-      updateStatus.resume();
-    },
+
     resetVariables: () => {
       iterator = 0;
       operationsCompleteted = 0;
@@ -51,7 +84,6 @@ let url = "http://localhost:8000/api/v1/vinicius", // Put URL here
       updateStatus.lastSignal = updateStatus.lastController.signal;
     },
     resetUI: () => {
-      form_submit_btn.disabled = true;
       net_time.innerHTML = "";
       validate_counters.innerHTML = "";
       success_data.innerHTML = false_data.innerHTML = "";
@@ -144,13 +176,13 @@ async function validateFunctionality(index) {
   if (appStatus === statusArray[1]) {
     return;
   }
-  if (iterator >= scriptArray.length || appStatus === statusArray[0]) {
+  if (index >= scriptArray.length || appStatus === statusArray[0]) {
     // updateStatus.stop();
     // updateStatus.updateUI();
     return;
   }
   try {
-    let response = await (await lineValidator(scriptArray[iterator])).json();
+    let response = await (await lineValidator(scriptArray[index])).json();
     // Set Execution Time
     const endTime = Date.now();
     response["jsExecTime"] = endTime - startTime;

@@ -59,7 +59,8 @@ body {
 }
 
 .line-numbers {
-  width: 20px;
+  min-width: 20px;
+  width: 100%;
   text-align: right;
 }
 
