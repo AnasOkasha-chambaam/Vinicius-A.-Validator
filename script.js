@@ -9,7 +9,7 @@ class HyperdizedWay {
     return this.iteratorValue;
   }
   set iterator(value) {
-    if (value > this.arr.length) return;
+    if (value > this.arr.length || appStatus !== statusArray[2]) return;
     this.iteratorValue = value;
     iterator = value;
     let promise = new Promise(async (res, rej, reason) => {
@@ -196,7 +196,11 @@ async function validateFunctionality(index) {
       updateStatus.stop();
     }
   } catch (err) {
+    console.log(appStatus);
+    if (appStatus !== statusArray[2]) return;
+    updateStatus.cancel();
     updateStatus.stop();
+    alert(err.message + ". Please, Try Again.");
     console.log(err.message);
   }
 }

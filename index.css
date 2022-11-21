@@ -216,3 +216,29 @@ body {
 #validate_counters span {
   color: var(--pause-clr);
 }
+
+/* Textarea ScrollBar */
+.editor textarea {
+  position: relative;
+}
+/* width */
+.editor textarea::-webkit-scrollbar {
+  --i: 3px;
+  height: 3px;
+  transition: 0.3s;
+}
+/* Track */
+.editor textarea::-webkit-scrollbar-track {
+  background: var(--success-clr);
+  cursor: pointer;
+}
+
+/* Handle */
+.editor textarea::-webkit-scrollbar-thumb {
+  background: var(--green-clr);
+}
+
+/* Handle on hover */
+.editor textarea::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
